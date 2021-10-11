@@ -31,6 +31,7 @@ group :development, :test do
   gem 'rspec-rails'
   gem 'rspec'
   gem 'pry'
+  gem 'bcrypt'
 end
 
 group :development do

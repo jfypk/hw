@@ -1,5 +1,6 @@
 import React from "react";
 import PropTypes from "prop-types";
+import { Route, Redirect } from "react-router-dom";
 
 // @material-ui/core components
 import withStyles from "@material-ui/core/styles/withStyles";
@@ -7,7 +8,6 @@ import InputAdornment from "@material-ui/core/InputAdornment";
 import Icon from "@material-ui/core/Icon";
 
 // @material-ui/icons
-import Face from "@material-ui/icons/Face";
 import Email from "@material-ui/icons/Email";
 // import LockOutline from "@material-ui/icons/LockOutline";
 
@@ -28,9 +28,39 @@ class LoginPage extends React.Component {
     super(props);
     // we use this to make the card to appear after the page has been rendered
     this.state = {
-      cardAnimaton: "cardHidden"
+      cardAnimaton: "cardHidden",
+      email: '',
+      password: '',
+      loggedIn: false,
     };
+    this.handleLogin = this.handleLogin.bind(this)
   }
+
+  onChange(input, value) {
+    this.setState({
+      [input]: value
+    })
+  }
+
+  handleLogin() {
+    const data = {
+      'email' : this.state.email, 
+      'password' : this.state.password
+    }
+
+    fetch('/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(data)
+    }).then(
+      response => response.json()
+    ).then(
+      data => this.setState({ loggedIn: data.logged_in })
+    )
+  }
+
   componentDidMount() {
     // we add a hidden class to the card and after 700 ms we delete it and the transition appears
     this.timeOutFunction = setTimeout(
@@ -40,14 +70,24 @@ class LoginPage extends React.Component {
       700
     );
   }
+
   componentWillUnmount() {
     clearTimeout(this.timeOutFunction);
     this.timeOutFunction = null;
   }
+
   render() {
     const { classes } = this.props;
-    return (
-      <div className={classes.container}>
+    return this.state.loggedIn ? (
+      <Route>
+        <Redirect to={{
+            pathname: "/dashboard",
+            state: { loggedIn: this.state.loggedIn }
+          }}
+        />
+      </Route>
+    ) : 
+    (<div className={classes.container}>
         <GridContainer justify="center">
           <GridItem xs={12} sm={6} md={4}>
             <form>
@@ -78,20 +118,6 @@ class LoginPage extends React.Component {
                 </CardHeader>
                 <CardBody>
                   <CustomInput
-                    labelText="First Name.."
-                    id="firstname"
-                    formControlProps={{
-                      fullWidth: true
-                    }}
-                    inputProps={{
-                      endAdornment: (
-                        <InputAdornment position="end">
-                          <Face className={classes.inputAdornmentIcon} />
-                        </InputAdornment>
-                      )
-                    }}
-                  />
-                  <CustomInput
                     labelText="Email..."
                     id="email"
                     formControlProps={{
@@ -102,7 +128,8 @@ class LoginPage extends React.Component {
                         <InputAdornment position="end">
                           <Email className={classes.inputAdornmentIcon} />
                         </InputAdornment>
-                      )
+                      ),
+                      onChange: (e) => this.onChange('email', e.target.value)
                     }}
                   />
                   <CustomInput
@@ -118,12 +145,13 @@ class LoginPage extends React.Component {
                             lock_outline
                           </Icon>
                         </InputAdornment>
-                      )
+                      ),
+                      onChange: (e) => this.onChange('password', e.target.value)
                     }}
                   />
                 </CardBody>
                 <CardFooter className={classes.justifyContentCenter}>
-                  <Button color="rose" simple size="lg" block>
+                  <Button color="rose" simple size="lg" block onClick={this.handleLogin}>
                     Let's Go
                   </Button>
                 </CardFooter>
@@ -131,8 +159,7 @@ class LoginPage extends React.Component {
             </form>
           </GridItem>
         </GridContainer>
-      </div>
-    );
+      </div>) 
   }
 }
 

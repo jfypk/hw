@@ -29,21 +29,11 @@ const style = {
   }
 };
 
-const fetchTestDatas = function () {
-  fetch('/api/v1/tests')
-    .then(res => res.json())
-    .then((response) => { console.log("Test datas response", response); })
-    .catch((error) => { console.log("Error while fetching test datas", error); })
-}
-
 function RegularTables({ ...props }) {
   const { classes } = props;
   return (
     <GridContainer>
       <GridItem xs={12}>
-        <button onClick={fetchTestDatas}>
-          Fetch Test Datas
-        </button>
         <Card>
           <CardHeader color="rose" icon>
             <CardIcon color="rose">

@@ -1,5 +1,6 @@
 import React from "react";
 import PropTypes from "prop-types";
+import { Route, Redirect } from "react-router-dom";
 // react plugin for creating charts
 import ChartistGraph from "react-chartist";
 // react plugin for creating vector maps
@@ -73,17 +74,29 @@ var mapData = {
 
 class Dashboard extends React.Component {
   state = {
-    value: 0
+    value: 0,
+    loggedIn: false
   };
+
+  componentDidMount() {
+    fetch('/login')
+    .then(res => res.json())
+    .then(
+      data => this.setState({ loggedIn: data.logged_in })
+    )
+  };
+
   handleChange = (event, value) => {
     this.setState({ value });
   };
+
   handleChangeIndex = index => {
     this.setState({ value: index });
   };
+
   render() {
     const { classes } = this.props;
-    return (
+    return (this.state.loggedIn || (this.props.location.state && this.props.location.state.loggedIn)) ? (
       <div>
         <GridContainer>
           <GridItem xs={12} sm={6} md={6} lg={3}>
@@ -583,6 +596,10 @@ class Dashboard extends React.Component {
           </GridItem>
         </GridContainer>
       </div>
+    ) : (
+      <Route>
+        <Redirect to='/pages/login-page' />
+      </Route>
     );
   }
 }

@@ -1,5 +1,6 @@
 import React from "react";
 import PropTypes from "prop-types";
+import { Route, Redirect } from "react-router-dom";
 
 // @material-ui/core components
 import withStyles from "@material-ui/core/styles/withStyles";
@@ -32,10 +33,16 @@ class RegisterPage extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      checked: []
+      checked: [],
+      firstName: '',
+      email: '',
+      password: '',
+      loggedIn: false,
     };
     this.handleToggle = this.handleToggle.bind(this);
+    this.registerUser = this.registerUser.bind(this);
   }
+
   handleToggle(value) {
     const { checked } = this.state;
     const currentIndex = checked.indexOf(value);
@@ -51,9 +58,44 @@ class RegisterPage extends React.Component {
       checked: newChecked
     });
   }
+
+  onChange(input, value) {
+    this.setState({
+      [input]: value
+    })
+  }
+
+  registerUser() {
+    const data = {
+      'first_name' : this.state.firstName, 
+      'email' : this.state.email, 
+      'password' : this.state.password
+    }
+
+    fetch('/users', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(data)
+    }).then(response => response.json()
+    ).then(data => {
+      this.setState({ loggedIn: data.logged_in })
+      // return (<Redirect to='/dashboard' />)
+    })
+  }
+
   render() {
     const { classes } = this.props;
-    return (
+    return this.state.loggedIn ? (
+      <Route>
+        <Redirect to={{
+            pathname: "/dashboard",
+            state: { loggedIn: this.state.loggedIn }
+          }}
+        />
+      </Route>
+    ) : (
       <div className={classes.container}>
         <GridContainer justify="center">
           <GridItem xs={12} sm={12} md={10}>
@@ -112,7 +154,8 @@ class RegisterPage extends React.Component {
                               <Face className={classes.inputAdornmentIcon} />
                             </InputAdornment>
                           ),
-                          placeholder: "First Name..."
+                          placeholder: "First Name...",
+                          onChange: (e) => this.onChange('firstName', e.target.value)
                         }}
                       />
                       <CustomInput
@@ -129,7 +172,8 @@ class RegisterPage extends React.Component {
                               <Email className={classes.inputAdornmentIcon} />
                             </InputAdornment>
                           ),
-                          placeholder: "Email..."
+                          placeholder: "Email...",
+                          onChange: (e) => this.onChange('email', e.target.value)
                         }}
                       />
                       <CustomInput
@@ -148,7 +192,8 @@ class RegisterPage extends React.Component {
                               </Icon>
                             </InputAdornment>
                           ),
-                          placeholder: "Password..."
+                          placeholder: "Password...",
+                          onChange: (e) => this.onChange('password', e.target.value)
                         }}
                       />
                       <FormControlLabel
@@ -178,7 +223,7 @@ class RegisterPage extends React.Component {
                         }
                       />
                       <div className={classes.center}>
-                        <Button round color="primary">
+                        <Button round color="primary" onClick={this.registerUser}>
                           Get started
                         </Button>
                       </div>
